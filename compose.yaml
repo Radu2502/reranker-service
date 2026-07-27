@@ -1,0 +1,14 @@
+services:
+  reranker:
+    build: .
+    container_name: reranker
+    ports:
+      - "8002:8002"
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    environment:
+      - HF_HOME=/root/.cache/huggingface
+    restart: unless-stopped
+
+volumes:
+  hf-cache:

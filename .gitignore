@@ -16,3 +16,7 @@ htmlcov/
 __pycache__/
 *.pub
 id_*
+# Environment
+.env
+.env.*
+!.env.example
