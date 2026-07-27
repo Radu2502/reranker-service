@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+__pycache__/
+*.pub
+id_*
