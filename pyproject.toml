@@ -1,23 +1,28 @@
 [project]
 name = "reranker-service"
 version = "0.1.0"
-description = "Add your description here"
+description = "Cross-encoder reranking of retrieved chunks for the Akadion RAG chatbot"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.139.2",
     "sentence-transformers>=5.6.0",
+    # Declarat explicit, deși vine tranzitiv prin sentence-transformers:
+    # [tool.uv.sources] se aplică doar dependențelor directe, iar fără el
+    # torch vine de pe PyPI cu cuda-toolkit și ~4.5 GB de wheel-uri NVIDIA.
+    "torch>=2.0",
 ]
 
 [dependency-groups]
 dev = [
-    "coverage>=7.15.2",
     "pytest>=9.1.1",
 ]
 
-[tool.coverage.run]
-source = ["main", "models"]
-branch = true
 
-[tool.coverage.report]
-show_missing = true
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
