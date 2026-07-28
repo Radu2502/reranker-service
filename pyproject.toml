@@ -15,9 +15,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "coverage>=7.15.2",
     "pytest>=9.1.1",
 ]
-
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
@@ -26,3 +26,10 @@ explicit = true
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
+
+[tool.coverage.run]
+source = ["main", "models"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
