@@ -1,0 +1,40 @@
+# Builder: aici stă uv, cache-ul de instalare și tot ce nu ne trebuie la runtime.
+FROM python:3.13-slim AS builder
+
+# Versiune pinnată: un build peste trei luni folosește același uv.
+COPY --from=ghcr.io/astral-sh/uv:0.11.26 /uv /uvx /bin/
+
+# Același WORKDIR ca în stagiul final — venv-ul are căi absolute înăuntru.
+WORKDIR /app
+
+# Dependențele separat de cod: o modificare în main.py nu invalidează cache-ul.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --no-install-project
+
+# Modelul descărcat aici, copiat mai jos: pornire fără rețea.
+ENV HF_HOME=/opt/hf
+RUN uv run python -c "\
+from sentence_transformers import CrossEncoder; \
+CrossEncoder('cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')"
+
+
+# Runtime: imagine curată, primește doar artefactele finite.
+FROM python:3.13-slim
+
+ENV PYTHONUNBUFFERED=1
+ENV HF_HOME=/opt/hf
+
+# Venv-ul în PATH înlocuiește `uv run` — uv nu mai ajunge în imagine.
+ENV PATH="/app/.venv/bin:$PATH"
+
+WORKDIR /app
+
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /opt/hf /opt/hf
+
+# Doar codul de producție: fără tests/, conftest.py, pyproject.toml.
+COPY main.py models.py ./
+
+EXPOSE 8002
+
+CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8002"]
