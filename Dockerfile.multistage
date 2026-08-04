@@ -27,13 +27,15 @@ ENV HF_HOME=/opt/hf
 # Venv-ul în PATH înlocuiește `uv run` — uv nu mai ajunge în imagine.
 ENV PATH="/app/.venv/bin:$PATH"
 
+ENV HF_HUB_OFFLINE=1
+
 WORKDIR /app
 
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /opt/hf /opt/hf
 
 # Doar codul de producție: fără tests/, conftest.py, pyproject.toml.
-COPY main.py models.py ./
+COPY main.py models.py logging_setup.py logging_ctx.py ./
 
 EXPOSE 8002
 
