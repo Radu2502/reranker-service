@@ -19,15 +19,24 @@ async def request_context(request: Request, call_next):
         response = await call_next(request)
         response.headers[HEADER] = rid
         log.info(
-            "%s %s -> %d in %.0fms",
-            request.method,
-            request.url.path,
-            response.status_code,
-            (time.perf_counter() - start) * 1000,
+            "http_request",
+            extra={
+                "method": request.method,
+                "path": request.url.path,
+                "status": response.status_code,
+                "duration_ms": round((time.perf_counter() - start) * 1000, 1),
+            },
         )
         return response
     except Exception:
-        log.exception("%s %s -> eroare", request.method, request.url.path)
+        log.exception(
+            "http_error",
+            extra={
+                "method": request.method,
+                "path": request.url.path,
+                "duration_ms": round((time.perf_counter() - start) * 1000, 1),
+            },
+        )
         raise
     finally:
         request_id_var.reset(token)

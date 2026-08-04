@@ -6,9 +6,8 @@ from fastapi import FastAPI
 from sentence_transformers import CrossEncoder
 
 from logging_setup import setup_logging
-from models import RerankRequest, RerankResponse, RerankedChunk
-
 from middleware import request_context
+from models import RerankRequest, RerankResponse, RerankedChunk
 
 setup_logging()
 log = logging.getLogger(__name__)
@@ -24,10 +23,10 @@ app = FastAPI(lifespan=lifespan)
 app.middleware("http")(request_context)
 
 # rulează O DATĂ, la pornirea serverului — modelul rămâne în RAM
-log.info("incarc modelul cross-encoder")
+log.info("model_loading")
 _t0 = time.perf_counter()
 model = CrossEncoder("cross-encoder/mmarco-mMiniLMv2-L12-H384-v1")
-log.info("model incarcat in %.1fs", time.perf_counter() - _t0)
+log.info("model_loaded", extra={"duration_ms": round((time.perf_counter() - _t0) * 1000, 1)})
 
 
 @app.get("/api/health")
@@ -37,7 +36,7 @@ def health():
 
 @app.post("/api/rerank/chunks")
 def rerank(request: RerankRequest) -> RerankResponse:
-    log.info("rerank start: %d chunks, top_k=%d", len(request.chunks), request.top_k)
+    log.info("rerank_start", extra={"n_chunks": len(request.chunks), "top_k": request.top_k})
     _t = time.perf_counter()
 
     pairs = [(request.query, d.text) for d in request.chunks]
@@ -62,7 +61,10 @@ def rerank(request: RerankRequest) -> RerankResponse:
     ]
 
     log.info(
-        "rerank done: %d returnate in %.0fms",
-        len(reranked), (time.perf_counter() - _t) * 1000,
+        "rerank_done",
+        extra={
+            "n_returned": len(reranked),
+            "duration_ms": round((time.perf_counter() - _t) * 1000, 1),
+        },
     )
     return RerankResponse(reranked_chunks=reranked)
