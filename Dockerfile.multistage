@@ -35,7 +35,7 @@ COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /opt/hf /opt/hf
 
 # Doar codul de producție: fără tests/, conftest.py, pyproject.toml.
-COPY main.py models.py logging_setup.py logging_ctx.py ./
+COPY main.py models.py logging_setup.py logging_ctx.py middleware.py ./
 
 EXPOSE 8002
 

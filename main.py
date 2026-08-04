@@ -8,6 +8,8 @@ from sentence_transformers import CrossEncoder
 from logging_setup import setup_logging
 from models import RerankRequest, RerankResponse, RerankedChunk
 
+from middleware import request_context
+
 setup_logging()
 log = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.middleware("http")(request_context)
 
 # rulează O DATĂ, la pornirea serverului — modelul rămâne în RAM
 log.info("incarc modelul cross-encoder")

@@ -32,5 +32,6 @@ def setup_logging(level: str | None = None) -> None:
         lg.handlers.clear()
         lg.propagate = True
 
-    for noisy in ("httpx", "httpcore", "huggingface_hub", "sentence_transformers"):
+    for noisy in ("httpx", "httpcore", "huggingface_hub",
+                  "sentence_transformers", "uvicorn.access"):
         logging.getLogger(noisy).setLevel("WARNING")
