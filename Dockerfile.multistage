@@ -39,4 +39,4 @@ COPY main.py models.py logging_setup.py logging_ctx.py middleware.py ./
 
 EXPOSE 8002
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]
+CMD ["opentelemetry-instrument", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]

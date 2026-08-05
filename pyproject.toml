@@ -11,6 +11,10 @@ dependencies = [
     # [tool.uv.sources] se aplică doar dependențelor directe, iar fără el
     # torch vine de pe PyPI cu cuda-toolkit și ~4.5 GB de wheel-uri NVIDIA.
     "torch>=2.0",
+    # OpenTelemetry: instrumentare automată FastAPI + export OTLP către Jaeger.
+    "opentelemetry-distro>=0.50b0",
+    "opentelemetry-exporter-otlp>=1.29.0",
+    "opentelemetry-instrumentation-fastapi>=0.50b0",
 ]
 
 [dependency-groups]

@@ -6,6 +6,8 @@ import sys
 from logging_ctx import request_id_var
 from datetime import datetime
 
+from opentelemetry import trace
+
 SERVICE = os.getenv("SERVICE_NAME", "reranker")
 
 # atributele standard ale unui LogRecord — tot ce nu e aici a venit din extra={}
@@ -31,6 +33,11 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             "msg": record.getMessage(),
         }
+
+        ctx = trace.get_current_span().get_span_context()
+        if ctx.is_valid:
+            payload["trace_id"] = format(ctx.trace_id, "032x")
+            payload["span_id"] = format(ctx.span_id, "016x")
         # orice ai pasat prin extra={...} ajunge automat in JSON
         for key, value in record.__dict__.items():
             if key not in _STD and key not in payload:
