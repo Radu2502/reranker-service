@@ -20,6 +20,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "coverage>=7.15.2",
+    "mypy>=2.3.1",
+    "pydantic>=2.13.4",
     "pytest>=9.1.1",
 ]
 
@@ -37,3 +39,26 @@ branch = true
 
 [tool.coverage.report]
 show_missing = true
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF", "ANN", "ASYNC", "S", "T20"]
+ignore = ["ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "ANN"]
+"conftest.py" = ["ANN"]
+"proba_reranker.py" = ["T20"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unreachable = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "conftest"]
+disallow_untyped_defs = false
