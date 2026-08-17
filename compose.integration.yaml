@@ -1,0 +1,31 @@
+# Override pentru rularea impreuna cu rag-llm.
+#
+# rag-llm apeleaza reranker-ul la http://reranker-service:8002 (vezi
+# services/rag-llm/docker/docker-compose.yml), dar serviciul nostru se numeste
+# `reranker` si sta pe reteaua implicita a propriului proiect compose. Doua
+# probleme: numele nu se rezolva, si containerele nu sunt oricum pe aceeasi retea.
+#
+# services/rag-llm/ e READ-ONLY, deci alias-ul si atasarea la retea se fac aici.
+#
+# Tinut separat de compose.yaml intentionat: `external: true` cere ca reteaua sa
+# existe deja, deci daca ar sta in compose.yaml, un `docker compose up` de unul
+# singur ar esua cu "network ... declared as external, but could not be found".
+#
+# Utilizare — intai porneste rag-llm (el creeaza reteaua), apoi:
+#   docker compose -f compose.yaml -f compose.integration.yaml up
+#
+# ATENTIE la `name:` de mai jos. Docker prefixeaza reteaua cu numele proiectului
+# compose, care implicit e numele folderului din care pornesti. Pornit din
+# services/rag-llm/docker/, proiectul e `docker`, deci reteaua e `docker_rag_network`.
+# Confirma cu `docker network ls` inainte, nu ghici.
+services:
+  reranker:
+    networks:
+      rag_network:
+        aliases:
+          - reranker-service
+
+networks:
+  rag_network:
+    external: true
+    name: docker_rag_network
