@@ -17,6 +17,17 @@ RUN uv run python -c "\
 from sentence_transformers import CrossEncoder; \
 CrossEncoder('cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')"
 
+# Sursa intra ultima, ca modelul si cele 71 de pachete sa ramana cache-uite.
+# README.md e obligatoriu: pyproject are `readme = "README.md"`, iar hatchling
+# citeste metadatele la build — fara el, `uv sync` cade.
+COPY README.md ./
+COPY src/ ./src/
+
+# Instaleaza pachetul `reranker` in venv (editable, .pth -> /app/src). Pasul de
+# mai sus folosea --no-install-project, deci fara asta venv-ul copiat mai jos
+# n-ar contine pachetul si `uvicorn reranker.main:app` ar da ModuleNotFoundError.
+RUN uv sync --locked --no-dev
+
 
 # Runtime: imagine curată, primește doar artefactele finite.
 FROM python:3.13-slim
@@ -34,9 +45,11 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /opt/hf /opt/hf
 
+# Sursa vine din builder, nu din context: garanteaza ca e exact ce s-a instalat.
+# Calea trebuie sa ramana /app/src — acolo arata .pth-ul din venv.
 # Doar codul de producție: fără tests/, conftest.py, pyproject.toml.
-COPY main.py models.py logging_setup.py logging_ctx.py middleware.py ./
+COPY --from=builder /app/src /app/src
 
 EXPOSE 8002
 
-CMD ["opentelemetry-instrument", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]
+CMD ["opentelemetry-instrument", "uvicorn", "reranker.main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]

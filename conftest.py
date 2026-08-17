@@ -9,7 +9,7 @@ class FakeCrossEncoder:
 
 sentence_transformers.CrossEncoder = FakeCrossEncoder
 
-import main
+from reranker import main
 from fastapi.testclient import TestClient
 
 @pytest.fixture

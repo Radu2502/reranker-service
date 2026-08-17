@@ -5,9 +5,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sentence_transformers import CrossEncoder
 
-from logging_setup import setup_logging
-from middleware import request_context
-from models import RerankRequest, RerankResponse, RerankedChunk
+from reranker.logging.middleware import request_context
+from reranker.logging.setup import setup_logging
+from reranker.models import RerankRequest, RerankResponse, RerankedChunk
 
 setup_logging()
 log = logging.getLogger(__name__)

@@ -1,17 +1,21 @@
 services:
   reranker:
-    build: .
+    # Imaginea multistage e cea de rulare: HF_HOME consecvent cu modelul copt,
+    # HF_HUB_OFFLINE=1 si pornire sub `opentelemetry-instrument`. Dockerfile-ul
+    # single-stage porneste cu `fastapi run` simplu, deci fara tracing.
+    build:
+      context: .
+      dockerfile: Dockerfile.multistage
     container_name: reranker
     ports:
       - "8002:8002"
-    volumes:
-      - hf-cache:/root/.cache/huggingface
+    # Fara HF_HOME si fara volum de cache: modelul e deja in imagine, sub /opt/hf.
+    # Suprascrierea lui HF_HOME trimitea containerul intr-un volum gol si il punea
+    # sa re-descarce ~470 MB la fiecare volum nou.
     environment:
-      - HF_HOME=/root/.cache/huggingface
       - LOG_FORMAT=json
       - SERVICE_NAME=reranker
-
+      # Fara collector, exportul OTLP da erori de conexiune in loguri — asteptat.
+      # Cu un Jaeger pornit, decomenteaza:
+      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     restart: unless-stopped
-
-volumes:
-  hf-cache:

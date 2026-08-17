@@ -25,4 +25,4 @@ RUN uv sync --locked --no-dev
 
 EXPOSE 8002
 
-CMD ["uv", "run", "fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uv", "run", "fastapi", "run", "src/reranker/main.py", "--host", "0.0.0.0", "--port", "8002"]
