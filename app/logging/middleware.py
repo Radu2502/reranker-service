@@ -6,7 +6,7 @@ import uuid
 from fastapi import Request
 from starlette.concurrency import iterate_in_threadpool
 
-from logging_ctx import request_id_var
+from app.logging.logging_ctx import request_id_var
 
 log = logging.getLogger("access")
 

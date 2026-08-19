@@ -6,7 +6,7 @@ from datetime import datetime
 
 from opentelemetry import trace
 
-from logging_ctx import request_id_var
+from app.logging.logging_ctx import request_id_var
 
 SERVICE = os.getenv("SERVICE_NAME", "reranker")
 
