@@ -3,9 +3,10 @@ import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from sentence_transformers import CrossEncoder
 
+from app.auth.basic_auth import verify_credentials
 from app.core.models import RerankedChunk, RerankRequest, RerankResponse
 from app.logging.logging_setup import setup_logging
 from app.logging.middleware import request_context
@@ -35,7 +36,7 @@ def health() -> dict[str, str | bool]:
     return {"status": "ok", "model_loaded": True}
 
 
-@app.post("/api/rerank/chunks")
+@app.post("/api/rerank/chunks", dependencies=[Depends(verify_credentials)])
 def rerank(request: RerankRequest) -> RerankResponse:
     log.info("rerank_start", extra={"n_chunks": len(request.chunks), "top_k": request.top_k})
     _t = time.perf_counter()
