@@ -1,5 +1,6 @@
 import logging
 import time
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -14,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging()   # re-aplica: uvicorn si-a pus handlerele intre timp
     yield
 
@@ -30,7 +31,7 @@ log.info("model_loaded", extra={"duration_ms": round((time.perf_counter() - _t0)
 
 
 @app.get("/api/health")
-def health():
+def health() -> dict[str, str | bool]:
     return {"status": "ok", "model_loaded": True}
 
 

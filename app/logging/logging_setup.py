@@ -26,8 +26,9 @@ class ContextFilter(logging.Filter):
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
+        ts = datetime.fromtimestamp(record.created).astimezone()
         payload = {
-            "ts": datetime.fromtimestamp(record.created).astimezone().isoformat(timespec="milliseconds"),
+            "ts": ts.isoformat(timespec="milliseconds"),
             "level": record.levelname,
             "service": getattr(record, "service", "-"),
             "request_id": getattr(record, "request_id", "-"),
