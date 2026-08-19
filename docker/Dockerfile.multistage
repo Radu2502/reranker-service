@@ -7,7 +7,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.11.26 /uv /uvx /bin/
 # Același WORKDIR ca în stagiul final — venv-ul are căi absolute înăuntru.
 WORKDIR /app
 
-# Dependențele separat de cod: o modificare în main.py nu invalidează cache-ul.
+# Dependențele separat de cod: o modificare în app/ nu invalidează cache-ul.
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
 
@@ -34,9 +34,9 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /opt/hf /opt/hf
 
-# Doar codul de producție: fără tests/, conftest.py, pyproject.toml.
-COPY main.py models.py logging_setup.py logging_ctx.py middleware.py ./
+# Doar codul de producție: pachetul app/, fără tests/ sau pyproject.toml.
+COPY app ./app
 
 EXPOSE 8002
 
-CMD ["opentelemetry-instrument", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]
+CMD ["opentelemetry-instrument", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]
