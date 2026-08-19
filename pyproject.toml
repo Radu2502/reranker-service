@@ -50,8 +50,6 @@ ignore = ["ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "ANN"]
-"conftest.py" = ["ANN"]
-"proba_reranker.py" = ["T20"]
 
 [tool.mypy]
 python_version = "3.13"

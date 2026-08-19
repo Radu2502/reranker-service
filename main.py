@@ -7,7 +7,7 @@ from sentence_transformers import CrossEncoder
 
 from logging_setup import setup_logging
 from middleware import request_context
-from models import RerankRequest, RerankResponse, RerankedChunk
+from models import RerankedChunk, RerankRequest, RerankResponse
 
 setup_logging()
 log = logging.getLogger(__name__)

@@ -2,11 +2,11 @@ import json
 import logging
 import os
 import sys
-
-from logging_ctx import request_id_var
 from datetime import datetime
 
 from opentelemetry import trace
+
+from logging_ctx import request_id_var
 
 SERVICE = os.getenv("SERVICE_NAME", "reranker")
 
