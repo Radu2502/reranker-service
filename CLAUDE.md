@@ -65,6 +65,14 @@ reranker-service/
 │   ├── Dockerfile
 │   └── Dockerfile.multistage    # cel folosit în compose; are opentelemetry-instrument
 ├── tests/
+│   ├── __init__.py              # necesar: fără el mypy se plânge de tests/
+│   ├── conftest.py              # FakeCrossEncoder + fixture-uri (client, credențiale)
+│   ├── test_main.py             # rerank: ordonare, top_k, scoruri lipsă
+│   ├── test_auth.py             # basic auth pe /api/rerank/chunks
+│   ├── test_middleware.py       # request_id: generat, preluat, resetat
+│   ├── test_logging_json.py     # JsonFormatter: trace_id / span_id
+│   └── test_logging_setup.py    # rezolvarea nivelului de log
+├── compose.yaml                 # dev local; referă docker/Dockerfile.multistage
 ├── pyproject.toml               # rămâne în rădăcină (cerință uv/ruff/mypy/pytest)
 ├── uv.lock                      # idem
 ├── .dockerignore                # rădăcină: se citește relativ la contextul de build
