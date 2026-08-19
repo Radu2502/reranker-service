@@ -63,11 +63,11 @@ reranker-service/
 │       └── basic_auth.py
 ├── docker/
 │   ├── Dockerfile
-│   ├── Dockerfile.multistage    # cel folosit în compose; are opentelemetry-instrument
-│   └── .dockerignore
+│   └── Dockerfile.multistage    # cel folosit în compose; are opentelemetry-instrument
 ├── tests/
 ├── pyproject.toml               # rămâne în rădăcină (cerință uv/ruff/mypy/pytest)
 ├── uv.lock                      # idem
+├── .dockerignore                # rădăcină: se citește relativ la contextul de build
 ├── .python-version
 ├── .gitignore
 └── README.md
