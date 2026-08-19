@@ -35,7 +35,7 @@ explicit = true
 torch = { index = "pytorch-cpu" }
 
 [tool.coverage.run]
-source = ["main", "models"]
+source = ["app"]
 branch = true
 
 [tool.coverage.report]
