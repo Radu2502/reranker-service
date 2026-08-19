@@ -9,6 +9,7 @@ from opentelemetry import trace
 from app.logging.logging_ctx import request_id_var
 
 SERVICE = os.getenv("SERVICE_NAME", "reranker")
+DEFAULT_LEVEL = "INFO"
 
 # atributele standard ale unui LogRecord — tot ce nu e aici a venit din extra={}
 _STD = set(logging.LogRecord("", 0, "", 0, "", (), None).__dict__) | {
@@ -48,7 +49,14 @@ class JsonFormatter(logging.Formatter):
 
 
 def setup_logging(level: str | None = None) -> None:
-    level = level or os.getenv("LOG_LEVEL", "INFO")
+    # setLevel accepta doar numele exacte, majuscule; "debug" sau "TRACE" arunca
+    # ValueError si serviciul moare la pornire, inainte sa existe vreun handler.
+    requested = level or os.getenv("LOG_LEVEL") or DEFAULT_LEVEL
+    resolved = requested.strip().upper()
+    unknown = resolved not in logging.getLevelNamesMapping()
+    if unknown:
+        resolved = DEFAULT_LEVEL
+
     fmt = os.getenv("LOG_FORMAT", "text").lower()
 
     handler = logging.StreamHandler(sys.stdout)
@@ -63,7 +71,7 @@ def setup_logging(level: str | None = None) -> None:
 
     root = logging.getLogger()
     root.handlers = [handler]
-    root.setLevel(level)
+    root.setLevel(resolved)
 
     for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
         lg = logging.getLogger(name)
@@ -73,3 +81,8 @@ def setup_logging(level: str | None = None) -> None:
     for noisy in ("httpx", "httpcore", "huggingface_hub",
                   "sentence_transformers", "uvicorn.access"):
         logging.getLogger(noisy).setLevel("WARNING")
+
+    if unknown:
+        logging.getLogger(__name__).warning(
+            "log_level_invalid", extra={"requested": requested, "used": resolved},
+        )
