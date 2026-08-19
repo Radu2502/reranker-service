@@ -2,7 +2,7 @@ import logging
 import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from sentence_transformers import CrossEncoder
 
 from app.core.models import RerankedChunk, RerankRequest, RerankResponse
@@ -42,9 +42,18 @@ def rerank(request: RerankRequest) -> RerankResponse:
     pairs = [(request.query, d.text) for d in request.chunks]
     scores = model.predict(pairs)
 
+    # Un zip fara strict= ar tacea aici si ar sterge chunk-uri din raspuns:
+    # aval nu are cum sa distinga rezultatul trunchiat de unul complet.
+    if len(scores) != len(request.chunks):
+        log.error(
+            "rerank_score_count_mismatch",
+            extra={"n_chunks": len(request.chunks), "n_scores": len(scores)},
+        )
+        raise HTTPException(status_code=500, detail="score count does not match chunk count")
+
     scored = [
         (i + 1, chunk, score)
-        for i, (chunk, score) in enumerate(zip(request.chunks, scores))
+        for i, (chunk, score) in enumerate(zip(request.chunks, scores, strict=True))
     ]
 
     ranked = sorted(scored, key=lambda pair: pair[2], reverse=True)
