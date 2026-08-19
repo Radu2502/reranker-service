@@ -21,7 +21,25 @@ from fastapi.testclient import TestClient
 
 from app import main
 
+UTILIZATOR = "test_user"
+PAROLA = "test_secret_123"
+
+
+@pytest.fixture(autouse=True)
+def credentiale(monkeypatch):
+    # Autoused: fara ele, /api/rerank/chunks raspunde 500 (auth neconfigurat)
+    # in toate testele, nu doar in cele de auth.
+    monkeypatch.setenv("RAG_SERVICE_USERNAME", UTILIZATOR)
+    monkeypatch.setenv("RAG_SERVICE_PASSWORD", PAROLA)
+
 
 @pytest.fixture
 def client():
+    c = TestClient(main.app)
+    c.auth = (UTILIZATOR, PAROLA)  # testele de rerank nu se ocupa de auth
+    return c
+
+
+@pytest.fixture
+def client_fara_auth():
     return TestClient(main.app)
