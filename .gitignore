@@ -20,3 +20,4 @@ id_*
 .env
 .env.*
 !.env.example
+.claude/
