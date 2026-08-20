@@ -11,6 +11,8 @@ from app.logging.logging_ctx import request_id_var
 from app.logging.middleware import HEADER, request_context
 
 HEX16 = re.compile(r"^[0-9a-f]{16}$")
+CALE = "/vazut"
+RID_TRIMIS = "abc123abc123abc1"
 
 
 @pytest.fixture
@@ -25,7 +27,7 @@ def client():
     app = FastAPI()
     app.middleware("http")(request_context)
 
-    @app.get("/vazut")
+    @app.get(CALE)
     def vazut():
         return {"rid": request_id_var.get()}
 
@@ -33,7 +35,7 @@ def client():
 
 
 def _cerere(
-    headers: dict[str, str] | None = None, path: str = "/vazut", body: bytes = b""
+    headers: dict[str, str] | None = None, path: str = CALE, body: bytes = b""
 ) -> Request:
     raw = [(k.lower().encode(), v.encode()) for k, v in (headers or {}).items()]
     scope = {
@@ -64,7 +66,7 @@ def _raspuns(payload: bytes = b'{"ok": true}') -> StreamingResponse:
 
 
 def test_request_id_generat_cand_lipseste_headerul(client):
-    r = client.get("/vazut")
+    r = client.get(CALE)
     rid = r.json()["rid"]
 
     assert HEX16.match(rid), f"asteptam 16 hex, am primit {rid!r}"
@@ -73,15 +75,15 @@ def test_request_id_generat_cand_lipseste_headerul(client):
 
 def test_request_id_preluat_din_header_cand_exista(client):
     trimis = "deadbeefdeadbeef"
-    r = client.get("/vazut", headers={HEADER: trimis})
+    r = client.get(CALE, headers={HEADER: trimis})
 
     assert r.json()["rid"] == trimis  # nu se genereaza altul peste
     assert r.headers[HEADER] == trimis
 
 
 def test_request_id_nu_se_scurge_de_la_o_cerere_la_alta(client):
-    primul = client.get("/vazut", headers={HEADER: "1111111111111111"}).json()["rid"]
-    al_doilea = client.get("/vazut").json()["rid"]
+    primul = client.get(CALE, headers={HEADER: "1111111111111111"}).json()["rid"]
+    al_doilea = client.get(CALE).json()["rid"]
 
     assert primul == "1111111111111111"
     assert al_doilea != primul
@@ -100,10 +102,10 @@ async def test_contextvar_resetat_dupa_cerere():
         vazut["rid"] = request_id_var.get()
         return _raspuns()
 
-    r = await request_context(_cerere({HEADER: "abc123abc123abc1"}), call_next)
+    r = await request_context(_cerere({HEADER: RID_TRIMIS}), call_next)
 
-    assert vazut["rid"] == "abc123abc123abc1"  # setat pe durata cererii
-    assert r.headers[HEADER] == "abc123abc123abc1"
+    assert vazut["rid"] == RID_TRIMIS  # setat pe durata cererii
+    assert r.headers[HEADER] == RID_TRIMIS
     assert request_id_var.get() == "-"  # si pus la loc dupa
 
 

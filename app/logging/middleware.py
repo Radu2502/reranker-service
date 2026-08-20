@@ -17,6 +17,7 @@ HEADER = "X-Request-ID"
 USER_HEADER = "X-User"
 SENSITIVE = {"password", "parola", "token", "secret", "access_token", "authorization"}
 MAX_LEN = 2000
+OMIS = "<omis>"
 SKIP_RESPONSE_PATHS = ("/api/rerank/chunks",)
 SKIP_PAYLOAD_PATHS = ("/api/rerank/chunks",)
 
@@ -82,8 +83,8 @@ async def request_context(
                 "status": response.status_code,
                 "duration_ms": round((time.perf_counter() - start) * 1000, 1),
                 "user": user,
-                "payload": _safe(body) if log_payload else "<omis>",
-                "response": _safe(raw_response) if log_resp else "<omis>",
+                "payload": _safe(body) if log_payload else OMIS,
+                "response": _safe(raw_response) if log_resp else OMIS,
             },
         )
         return response
@@ -95,7 +96,7 @@ async def request_context(
                 "path": request.url.path,
                 "duration_ms": round((time.perf_counter() - start) * 1000, 1),
                 "user": user,
-                "payload": _safe(body) if log_payload else "<omis>",
+                "payload": _safe(body) if log_payload else OMIS,
             },
         )
         raise
