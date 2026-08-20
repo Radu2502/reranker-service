@@ -1,6 +1,8 @@
 services:
   reranker:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.multistage
     container_name: reranker
     ports:
       - "8002:8002"

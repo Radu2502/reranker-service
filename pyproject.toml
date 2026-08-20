@@ -23,6 +23,7 @@ dev = [
     "mypy>=2.3.1",
     "pydantic>=2.13.4",
     "pytest>=9.1.1",
+    "ruff>=0.16.3",
 ]
 
 [[tool.uv.index]]
@@ -34,7 +35,7 @@ explicit = true
 torch = { index = "pytorch-cpu" }
 
 [tool.coverage.run]
-source = ["main", "models"]
+source = ["app"]
 branch = true
 
 [tool.coverage.report]
@@ -48,9 +49,7 @@ select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF", "ANN", "ASYNC", "S", "T20
 ignore = ["ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "ANN"]
-"conftest.py" = ["ANN"]
-"proba_reranker.py" = ["T20"]
+"tests/*" = ["S101", "ANN", "E402"]
 
 [tool.mypy]
 python_version = "3.13"

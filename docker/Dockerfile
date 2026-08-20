@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Stratul de dependențe, separat de cod: o modificare în main.py
+# Stratul de dependențe, separat de cod: o modificare în app/
 # nu invalidează cache-ul pentru cele 71 de pachete.
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project && \
@@ -25,4 +25,4 @@ RUN uv sync --locked --no-dev
 
 EXPOSE 8002
 
-CMD ["uv", "run", "fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]

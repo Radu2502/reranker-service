@@ -1,4 +1,6 @@
-import main
+from app import main
+
+CALE = "/api/rerank/chunks"
 
 
 def test_health(client):
@@ -20,7 +22,7 @@ def test_rerank_ordoneaza_dupa_scor(client, monkeypatch):
         ],
         "top_k": 2,
     }
-    r = client.post("/api/rerank/chunks", json=payload)
+    r = client.post(CALE, json=payload)
     assert r.status_code == 200
 
     chunks = r.json()["reranked_chunks"]
@@ -42,6 +44,22 @@ def test_top_k_mai_mare_decat_lista(client, monkeypatch):
         ],
         "top_k": 10,
     }
-    r = client.post("/api/rerank/chunks", json=payload)
+    r = client.post(CALE, json=payload)
     assert r.status_code == 200
     assert len(r.json()["reranked_chunks"]) == 2
+
+
+def test_scoruri_mai_putine_decat_chunks_da_500(client, monkeypatch):
+    # modelul întoarce un scor lipsă → răspuns trunchiat tăcut înainte de fix
+    monkeypatch.setattr(main.model, "predict", lambda pairs: [0.1, 0.9])
+    payload = {
+        "query": "test",
+        "chunks": [
+            {"text": "unu", "score": 0.0, "chunk_id": "x"},
+            {"text": "doi", "score": 0.0, "chunk_id": "y"},
+            {"text": "trei", "score": 0.0, "chunk_id": "z"},
+        ],
+        "top_k": 3,
+    }
+    r = client.post(CALE, json=payload)
+    assert r.status_code == 500

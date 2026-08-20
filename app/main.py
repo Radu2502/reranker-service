@@ -1,20 +1,22 @@
 import logging
 import time
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from sentence_transformers import CrossEncoder
 
-from logging_setup import setup_logging
-from middleware import request_context
-from models import RerankRequest, RerankResponse, RerankedChunk
+from app.auth.basic_auth import verify_credentials
+from app.core.models import RerankedChunk, RerankRequest, RerankResponse
+from app.logging.logging_setup import setup_logging
+from app.logging.middleware import request_context
 
 setup_logging()
 log = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging()   # re-aplica: uvicorn si-a pus handlerele intre timp
     yield
 
@@ -30,11 +32,11 @@ log.info("model_loaded", extra={"duration_ms": round((time.perf_counter() - _t0)
 
 
 @app.get("/api/health")
-def health():
+def health() -> dict[str, str | bool]:
     return {"status": "ok", "model_loaded": True}
 
 
-@app.post("/api/rerank/chunks")
+@app.post("/api/rerank/chunks", dependencies=[Depends(verify_credentials)])
 def rerank(request: RerankRequest) -> RerankResponse:
     log.info("rerank_start", extra={"n_chunks": len(request.chunks), "top_k": request.top_k})
     _t = time.perf_counter()
@@ -42,9 +44,18 @@ def rerank(request: RerankRequest) -> RerankResponse:
     pairs = [(request.query, d.text) for d in request.chunks]
     scores = model.predict(pairs)
 
+    # Un zip fara strict= ar tacea aici si ar sterge chunk-uri din raspuns:
+    # aval nu are cum sa distinga rezultatul trunchiat de unul complet.
+    if len(scores) != len(request.chunks):
+        log.error(
+            "rerank_score_count_mismatch",
+            extra={"n_chunks": len(request.chunks), "n_scores": len(scores)},
+        )
+        raise HTTPException(status_code=500, detail="score count does not match chunk count")
+
     scored = [
         (i + 1, chunk, score)
-        for i, (chunk, score) in enumerate(zip(request.chunks, scores))
+        for i, (chunk, score) in enumerate(zip(request.chunks, scores, strict=True))
     ]
 
     ranked = sorted(scored, key=lambda pair: pair[2], reverse=True)
