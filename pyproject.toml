@@ -33,8 +33,15 @@ explicit = true
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
 
+[tool.pytest.ini_options]
+# Radacina pe sys.path, ca testele sa poata face `from app import main`. Nu
+# `app`: pachetul e `app/`, deci pe sys.path trebuie sa fie parintele lui.
+pythonpath = ["."]
+
 [tool.coverage.run]
-source = ["main", "models"]
+# `models` s-a mutat in app/models.py; `app` prinde tot pachetul, deci
+# subpachetele noi intra automat, fara lista de intretinut aici.
+source = ["main", "app"]
 branch = true
 
 [tool.coverage.report]

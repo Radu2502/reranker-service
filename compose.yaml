@@ -1,6 +1,11 @@
 services:
   reranker:
-    build: .
+    # Contextul ramane radacina, nu docker/: acolo sta .dockerignore (Docker il
+    # citeste doar din radacina contextului) si tot ce fac COPY-urile e relativ
+    # la context, nu la locatia Dockerfile-ului.
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     container_name: reranker
     ports:
       - "8002:8002"
@@ -10,6 +15,11 @@ services:
       - HF_HOME=/root/.cache/huggingface
       - LOG_FORMAT=json
       - SERVICE_NAME=reranker
+      # Citite la import in app/main.py, fara default. `:?` face compose sa cada
+      # imediat cu mesaj clar, in loc sa porneasca un container care moare la
+      # import cu KeyError. Valorile vin din mediu sau din .env, nu din repo.
+      - API_USER=${API_USER:?API_USER trebuie setat}
+      - API_PASSWORD=${API_PASSWORD:?API_PASSWORD trebuie setat}
 
     restart: unless-stopped
 

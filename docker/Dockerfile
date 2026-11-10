@@ -25,4 +25,6 @@ RUN uv sync --locked --no-dev
 
 EXPOSE 8002
 
-CMD ["uv", "run", "fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8002"]
+# API_USER si API_PASSWORD sunt citite la import in app/main.py, fara default:
+# fara ele in mediu, containerul cade la pornire cu KeyError.
+CMD ["uv", "run", "fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8002"]

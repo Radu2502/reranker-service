@@ -34,9 +34,13 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /opt/hf /opt/hf
 
-# Doar codul de producție: fără tests/, conftest.py, pyproject.toml.
-COPY main.py models.py logging_setup.py logging_ctx.py middleware.py ./
+# Doar codul de producție: fără tests/, pyproject.toml.
+# app/ copiat ca pachet: fisierele noi din el intra automat, fara editat aici.
+# main.py e acum app/main.py, deci intra prin COPY-ul de mai jos.
+COPY app/ ./app/
 
 EXPOSE 8002
 
-CMD ["opentelemetry-instrument", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]
+# API_USER si API_PASSWORD sunt citite la import in app/main.py, fara default:
+# fara ele in mediu, containerul cade la pornire cu KeyError.
+CMD ["opentelemetry-instrument", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--no-access-log"]
