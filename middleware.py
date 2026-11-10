@@ -34,7 +34,7 @@ def _safe(raw: bytes):
 async def request_context(request: Request, call_next):
     rid = request.headers.get(HEADER) or uuid.uuid4().hex[:16]
     token = request_id_var.set(rid)
-    user = request.headers.get(USER_HEADER) or "anonymous"
+    user = request.headers.get(USER_HEADER) or "system"
     start = time.perf_counter()
 
     body = await request.body()
